@@ -1,7 +1,8 @@
 import express from 'express';
 import mongoose from 'mongoose';
-import userRouter from './routes/userRouter.js';
-import postRouter from './routes/postRouter.js';
+
+import { postRouter, userRouter } from './routes/index.js';
+import {upload, checkAuth} from './middlewares/index.js';
 
 mongoose.connect("mongodb+srv://leegra:jAcvtnnWF2qmBTdK@cluster0.o97bigy.mongodb.net/blog").then(()=>{
     console.log("DB ok");
@@ -14,6 +15,12 @@ app.use(express.json()); // преобразование входящих дан
 
 app.use("/auth",userRouter);
 app.use("/posts",postRouter);
+app.use("/uploads",express.static('uploads'));
+app.post("/upload",checkAuth, upload.single("image"), (req, res) => {
+    res.json({
+        url: `/uploads/${req.file.originalname}`
+    })
+});
 
 app.listen(3000, (err)=>{
     if (err) {
