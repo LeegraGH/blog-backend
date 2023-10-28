@@ -7,7 +7,8 @@ import handleValidationErrors from '../utils/handleValidationErrors.js';
 
 const postRouter = express.Router();
 
-postRouter.get("/", checkAuth, PostController.getAll);
+postRouter.get("/", PostController.getAll);
+postRouter.get("/tags/", PostController.getTags);
 postRouter.get("/:id", PostController.getOne);
 postRouter.post("/", checkAuth, postValidation, handleValidationErrors, PostController.create);
 postRouter.delete("/:id", checkAuth, PostController.remove);

@@ -1,12 +1,25 @@
 import PostModel from "../models/Post.js";
 
+export const getTags = async (req, res) => {
+    try {
+        const posts = await PostModel.find().limit(5);
+        const tags = [...new Set(posts.map(post => post.tags).flat().slice(0, 5))];
+
+        res.json(tags);
+    } catch (error) {
+        res.status(500).json({
+            message: "Не удалось получить тэги"
+        })
+    }
+}
+
 export const create = async (req, res) => {
     try {
         const data = new PostModel({
             title: req.body.title,
             text: req.body.text,
             imageUrl: req.body.imageUrl,
-            tags: req.body.tags,
+            tags: req.body.tags.split(/, ?/),
             user: req.userId
         })
 
@@ -22,7 +35,7 @@ export const create = async (req, res) => {
 
 export const getAll = async (req, res) => {
     try {
-        const posts = await PostModel.find({user: req.userId}).populate({path: "user", select:["fullName","avatarUrl"]}).exec();
+        const posts = await PostModel.find().populate({ path: "user", select: ["fullName", "avatarUrl"] }).exec();
         res.json(posts);
     } catch (error) {
         res.status(500).json({
@@ -33,13 +46,13 @@ export const getAll = async (req, res) => {
 
 export const getOne = async (req, res) => {
     try {
-        const postId=req.params.id;
+        const postId = req.params.id;
         const post = await PostModel.findOneAndUpdate(
-            {_id: postId},
-            {$inc:{viewsCount:1}},
-            {new: true}).populate({path:"user",select:["fullName","avatarUrl"]}).exec();
-        if (!post){
-            return res.status(404).json({message: "Статья не найдена"});
+            { _id: postId },
+            { $inc: { viewsCount: 1 } },
+            { new: true }).populate({ path: "user", select: ["fullName", "avatarUrl"] }).exec();
+        if (!post) {
+            return res.status(404).json({ message: "Статья не найдена" });
         }
         res.json(post);
     } catch (error) {
@@ -52,9 +65,9 @@ export const getOne = async (req, res) => {
 export const remove = async (req, res) => {
     try {
         const postId = req.params.id;
-        const post = await PostModel.findOneAndDelete({_id: postId});
-        if (!post){
-            return res.status(404).json({message: "Статья не найдена"});
+        const post = await PostModel.findOneAndDelete({ _id: postId });
+        if (!post) {
+            return res.status(404).json({ message: "Статья не найдена" });
         }
         res.json({
             success: true
@@ -69,15 +82,15 @@ export const remove = async (req, res) => {
 export const update = async (req, res) => {
     try {
         const postId = req.params.id;
-        const post = await PostModel.updateOne({_id: postId},{
+        const post = await PostModel.updateOne({ _id: postId }, {
             title: req.body.title,
             text: req.body.text,
             imageUrl: req.body.imageUrl,
-            tags: req.body.tags,
+            tags: req.body.tags.split(/, ?/),
             user: req.userId
         });
-        if (!post.modifiedCount){
-            return res.status(404).json({message: "Статья не найдена"});
+        if (!post.modifiedCount) {
+            return res.status(404).json({ message: "Статья не найдена" });
         }
         res.json({
             success: true
